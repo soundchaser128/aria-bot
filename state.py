@@ -1,9 +1,11 @@
 from enum import Enum
 import logging
+from typing import List
+
 
 class State(Enum):
     Start = 0
-    ChooseName = 1
+    GreetingUser = 1
 
 
 class UserState:
@@ -16,5 +18,15 @@ class UserState:
         self.user_name = user_name
         self.current = State.Start
 
-    def next(self, input: str):
-        logging.info('received input %s for user %s', input, self.user_name)
+    def next(self, input: str) -> List[str]:
+        logging.info("received input %s for user %s", input, self.user_name)
+
+        if self.current == State.Start:
+            self.current = State.GreetingUser
+            return [
+                f"Hello {self.user_name}, I am ARIA and I'm your new Mistress.",
+                "For this session, don't you think we should call you something more appropriate?",
+            ]
+
+        else:
+            return ["That's it for now"]
