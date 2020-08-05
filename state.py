@@ -24,8 +24,7 @@ class UserState:
         if self.current == State.Start:
             self.current = State.GreetingUser
             return [
-                f"Hello {self.user_name}, I am ARIA and I'm your new Mistress.",
-                "For this session, don't you think we should call you something more appropriate?",
+                f"Hello {self.user_name}, I am ARIA and I'm your new Mistress\nFor this session, don't you think we should call you something more appropriate?",
             ]
 
         else:
