@@ -12,6 +12,17 @@ IMAGES = {
     "neutral": "https://media.discordapp.net/attachments/643335030617407488/733402800360521788/Domme_Cara.jpg?width=652&height=864",
     "strict": "https://media.discordapp.net/attachments/643335030617407488/733782996011712512/ARIA_Strict.jpg?width=641&height=849"
 }
+HELP_MESSAGE = """
+**ARIA**
+Virtual mistress. You must be 18 or older to continue.
+
+Enter any text to start a game or to answer the bot's questions.
+
+Commands:
+* `!reset`: Reset your game to the beginning.
+* `!cleanup`: Remove all the bot's messages.
+* `!help`: To view this help message.
+"""
 
 class AriaBot(discord.Client):
     # TODO load from/save to database eventually (for persistence across restarts)
@@ -46,21 +57,23 @@ class AriaBot(discord.Client):
         
         if should_process:
             content: str = message.content
-            logging.info("received message %s", content)
             user_id = message.author.id
-            state = None
+            user_name = message.author.name
+            logging.info("received message '%s' from user '%s'", content, user_name)
 
             if content.startswith(PREFIX):
                 if content == "!cleanup":
                     await self.do_cleanup(message, user_id)
                 elif content == "!reset":
-                    self.user_states[user_id] = UserState(user_id, message.author.name)
-
+                    self.user_states[user_id] = UserState(user_id, user_name)                    
+                elif content == "!help":
+                    await message.channel.send(HELP_MESSAGE)
             else:
+                state = None
                 try:
                     state = self.user_states[user_id]
                 except KeyError:
-                    state = UserState(user_id, message.author.name)
+                    state = UserState(user_id, user_name)
                     self.user_states[user_id] = state
                 text = state.next(message.content)
                 await message.channel.send(embed=self.create_embed(text, state))

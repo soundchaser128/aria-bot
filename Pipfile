@@ -11,6 +11,7 @@ pylint = "*"
 [packages]
 "discord.py" = "*"
 python-dotenv = "*"
+transitions = "*"
 
 [requires]
 python_version = "3.8"
