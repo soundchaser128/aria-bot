@@ -32,10 +32,12 @@ def clean_input(input: str) -> List[str]:
     return [WORD_REGEX.sub("", s) for s in tokens]
 
 
+# TODO this approach probably won't scale well
 class State(Enum):
     AskGender = 0
     GreetingUser = 1
     FirstQuestion = 2
+    FirstQuestionConfirmation = 3
     End = auto
 
 
@@ -92,7 +94,7 @@ class UserState:
                 """
             elif tokens == ["yes"]:
                 # TODO
-                self.current = State.FirstQuestion
+                self.current = State.FirstQuestionConfirmation
                 return "Close. Yes *what?*"
             else:
                 self.mood -= 2
@@ -103,7 +105,7 @@ class UserState:
                     A "yes" or "yes mistress" should have been easy, but you had to get mouthy.
                     So your new name is **{self.slave_name}** and you'll see what that means if you don't improve your attitude.
                 """
-        elif self.current == State.FirstQuestion:
+        elif self.current == State.FirstQuestionConfirmation:
             tokens = clean_input(user_input)
 
             if tokens == ["yes", "mistress"]:
@@ -111,7 +113,7 @@ class UserState:
                 self.slave_name = generate_slave_name("first", "last")
                 self.current = State.End
                 return f"""
-                    Good boy! You got there. That's the correct answer.\
+                    Good {self.gender}! You got there. That's the correct answer.
                     I've decided to name you **{self.slave_name}** because you're a good little {self.gender} who's eager to please.
                 """
             else:

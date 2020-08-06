@@ -2,9 +2,10 @@ import os
 import logging
 from typing import Dict
 import discord
+from discord.activity import Game
 from dotenv import load_dotenv
 from discord.embeds import Embed
-from state import State, UserState
+from state import UserState
 
 PREFIX = "!"
 IMAGES = {
@@ -13,9 +14,11 @@ IMAGES = {
 }
 
 class AriaBot(discord.Client):
+    # TODO load from/save to database eventually (for persistence across restarts)
     user_states: Dict[int, UserState] = {}
 
     async def on_ready(self):
+        await self.change_presence(status= Game(name="DM me to get started!"))
         logging.info("bot is ready!")
 
     def create_embed(self, msg: str, state: UserState) -> Embed:
