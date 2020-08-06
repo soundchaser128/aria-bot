@@ -1,23 +1,21 @@
-import discord
 import os
-from discord.embeds import Embed
-from dotenv import load_dotenv
 import logging
-from state import UserState
 from typing import Dict
+import discord
+from dotenv import load_dotenv
+from discord.embeds import Embed
+from state import UserState
 
 PREFIX = "!"
-
+IMAGES = {
+    "neutral": "https://media.discordapp.net/attachments/643335030617407488/733402800360521788/Domme_Cara.jpg?width=652&height=864"
+}
 
 class AriaBot(discord.Client):
     user_states: Dict[int, UserState] = {}
 
     async def on_ready(self):
         logging.info("bot is ready!")
-        pass
-
-    def filter_message(self, message: discord.Message) -> bool:
-        return type(message.channel) is discord.DMChannel and not message.author.bot
 
     def create_embed(self, msg: str, state: UserState) -> Embed:
         embed = Embed(
@@ -25,7 +23,7 @@ class AriaBot(discord.Client):
         )
         embed.add_field(name="Mistress Mood", value=str(state.mood))
         embed.set_image(
-            url="https://media.discordapp.net/attachments/643335030617407488/733402800360521788/Domme_Cara.jpg?width=652&height=864"
+            url=IMAGES["neutral"]
         )
         return embed
 
@@ -37,7 +35,9 @@ class AriaBot(discord.Client):
                 await message.delete()
 
     async def on_message(self, message: discord.Message):
-        if self.filter_message(message):
+        should_process = isinstance(message.channel, discord.DMChannel) and not message.author.bot
+        
+        if should_process:
             content: str = message.content
             logging.info("received message %s", content)
             user_id = message.author.id

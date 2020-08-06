@@ -12,17 +12,22 @@ def load_names():
 
 
 WORD_REGEX = re.compile("([^a-z]+)", re.UNICODE)
-SPACE_REGEX = re.compile("\s+")
+SPACE_REGEX = re.compile(r"\s+")
 NAME_LISTS = load_names()
 
 
 def generate_slave_name(first_name: str, last_name: str) -> str:
+    """
+    Generates a name for the user.
+    """
     first = random.choice(NAME_LISTS[first_name])
     last = random.choice(NAME_LISTS[last_name])
     return f"{first} {last}"
 
-
 def clean_input(input: str) -> List[str]:
+    """
+    Converts the input into a list of lower-case tokens with all non-alphabetic characters removed.
+    """
     tokens = SPACE_REGEX.split(input.strip().lower())
     return [WORD_REGEX.sub("", s) for s in tokens]
 
@@ -33,6 +38,9 @@ class State(Enum):
 
 
 class UserState:
+    """
+    Encapsulates the entire game state for a single user. State machine-ish.
+    """
     user_id: int
     user_name: str
     current: State
@@ -48,6 +56,10 @@ class UserState:
         self.slave_name = None
 
     def next(self, user_input: str) -> str:
+        """
+        Takes the user's input and advances the state based on it. Returns
+        the text the bot should answer in response.
+        """
         logging.info("received input %s for user %s", user_input, self.user_name)
 
         if self.current == State.GreetingUser:
