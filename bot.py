@@ -4,11 +4,12 @@ from typing import Dict
 import discord
 from dotenv import load_dotenv
 from discord.embeds import Embed
-from state import UserState
+from state import State, UserState
 
 PREFIX = "!"
 IMAGES = {
-    "neutral": "https://media.discordapp.net/attachments/643335030617407488/733402800360521788/Domme_Cara.jpg?width=652&height=864"
+    "neutral": "https://media.discordapp.net/attachments/643335030617407488/733402800360521788/Domme_Cara.jpg?width=652&height=864",
+    "strict": "https://media.discordapp.net/attachments/643335030617407488/733782996011712512/ARIA_Strict.jpg?width=641&height=849"
 }
 
 class AriaBot(discord.Client):
@@ -18,12 +19,15 @@ class AriaBot(discord.Client):
         logging.info("bot is ready!")
 
     def create_embed(self, msg: str, state: UserState) -> Embed:
+        image = "neutral"
+        if state.mood < 0:
+            image = "strict"
         embed = Embed(
             title="ARIA", description=msg, color=discord.Color.from_rgb(255, 0, 0)
         )
         embed.add_field(name="Mistress Mood", value=str(state.mood))
         embed.set_image(
-            url=IMAGES["neutral"]
+            url=IMAGES[image]
         )
         return embed
 
