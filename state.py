@@ -11,7 +11,7 @@ def load_names():
         return json.load(fp)
 
 
-WORD_REGEX = re.compile("[^a-z]+")
+WORD_REGEX = re.compile("([^a-z]+)", re.UNICODE)
 SPACE_REGEX = re.compile("\s+")
 NAME_LISTS = load_names()
 
@@ -25,14 +25,13 @@ def generate_slave_name(first_name: str, last_name: str) -> str:
 # FIXME
 def clean_input(input: str) -> str:
     tokens = SPACE_REGEX.split(input.strip().lower())
-    return [WORD_REGEX.sub(s, "") for s in tokens]
+    return [WORD_REGEX.sub("", s) for s in tokens]
 
 
 class State(Enum):
     Start = 0
     GreetingUser = 1
     FirstQuestion = 2
-    FirstQuestionYes = 3
 
 
 class UserState:
@@ -55,16 +54,17 @@ class UserState:
 
         if self.current == State.Start:
             self.current = State.GreetingUser
-            return f"Hello {self.user_name}, I am ARIA and I'm your new Mistress\nFor this session, don't you think we should call you something more appropriate?"
+            return f"""
+                Hello {self.user_name}, I am ARIA and I'm your new Mistress.
+                For this session, don't you think we should call you something more appropriate?
+            """
 
         elif self.current == State.GreetingUser:
-            self.current = State.FirstQuestion
             input = clean_input(input)
             logging.info("parsed input into %s", input)
 
             if input == ["yes", "mistress"]:
                 self.mood += 2
-                # TODO
                 self.slave_name = generate_slave_name("first", "last")
                 return f"""
                     Good boy! That's the correct answer.
@@ -72,7 +72,7 @@ class UserState:
                 """
             elif input == ["yes"]:
                 # TODO
-                self.current = State.FirstQuestionYes
+                self.current = State.FirstQuestion
                 return "Close. Yes *what?*"
             else:
                 self.mood -= 2
@@ -80,8 +80,8 @@ class UserState:
                 return f"""
                     A "yes" or "yes mistress" should have been easy, but you had to get mouthy.
                     So your new name is **{self.slave_name}** and you'll see what that means if you don't improve your attitude.
-                    """
-        elif self.current == State.FirstQuestionYes:
+                """
+        elif self.current == State.FirstQuestion:
             # TODO
             return "TODO"
         else:
