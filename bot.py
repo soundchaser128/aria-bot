@@ -6,6 +6,8 @@ import logging
 from state import UserState
 from typing import Dict
 
+PREFIX = "!"
+
 
 class AriaBot(discord.Client):
     user_states: Dict[int, UserState] = {}
@@ -14,10 +16,10 @@ class AriaBot(discord.Client):
         logging.info("bot is ready!")
         pass
 
-    def _filter_message(self, message: discord.Message) -> bool:
+    def filter_message(self, message: discord.Message) -> bool:
         return type(message.channel) is discord.DMChannel and not message.author.bot
 
-    def _create_embed(self, msg: str, state: UserState) -> Embed:
+    def create_embed(self, msg: str, state: UserState) -> Embed:
         embed = Embed(
             title="ARIA", description=msg, color=discord.Color.from_rgb(255, 0, 0)
         )
@@ -27,18 +29,34 @@ class AriaBot(discord.Client):
         )
         return embed
 
+    async def do_cleanup(self, message: discord.Message, user_id: int):
+        logging.info("cleaning up bot messages for user %s", user_id)
+        async for message in message.channel.history(limit=200):
+            if message.author.id == self.user.id:
+                logging.info("deleting message %s", message.id)
+                await message.delete()
+
     async def on_message(self, message: discord.Message):
-        if self._filter_message(message):
-            logging.info("received message %s", message.content)
+        if self.filter_message(message):
+            content: str = message.content
+            logging.info("received message %s", content)
             user_id = message.author.id
             state = None
-            try:
-                state = self.user_states[user_id]
-            except KeyError:
-                state = UserState(user_id, message.author.name)
-                self.user_states[user_id] = state
-            text = state.next(message.content)
-            await message.channel.send(embed=self._create_embed(text, state))
+
+            if content.startswith(PREFIX):
+                if content == "!cleanup":
+                    await self.do_cleanup(message, user_id)
+                elif content == "!reset":
+                    self.user_states[user_id] = UserState(user_id, message.author.name)
+
+            else:
+                try:
+                    state = self.user_states[user_id]
+                except KeyError:
+                    state = UserState(user_id, message.author.name)
+                    self.user_states[user_id] = state
+                text = state.next(message.content)
+                await message.channel.send(embed=self.create_embed(text, state))
 
 
 if __name__ == "__main__":

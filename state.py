@@ -22,16 +22,14 @@ def generate_slave_name(first_name: str, last_name: str) -> str:
     return f"{first} {last}"
 
 
-# FIXME
 def clean_input(input: str) -> List[str]:
     tokens = SPACE_REGEX.split(input.strip().lower())
     return [WORD_REGEX.sub("", s) for s in tokens]
 
 
 class State(Enum):
-    Start = 0
-    GreetingUser = 1
-    FirstQuestion = 2
+    GreetingUser = 0
+    FirstQuestion = 1
 
 
 class UserState:
@@ -45,21 +43,21 @@ class UserState:
     def __init__(self, user_id: int, user_name: str):
         self.user_id = user_id
         self.user_name = user_name
-        self.current = State.Start
+        self.current = State.GreetingUser
         self.mood = 0
         self.slave_name = None
 
     def next(self, user_input: str) -> str:
         logging.info("received input %s for user %s", user_input, self.user_name)
 
-        if self.current == State.Start:
-            self.current = State.GreetingUser
+        if self.current == State.GreetingUser:
+            self.current = State.FirstQuestion
             return f"""
                 Hello {self.user_name}, I am ARIA and I'm your new Mistress.
                 For this session, don't you think we should call you something more appropriate?
             """
 
-        elif self.current == State.GreetingUser:
+        elif self.current == State.FirstQuestion:
             tokens = clean_input(user_input)
             logging.info("parsed input into %s", tokens)
 
