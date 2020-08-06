@@ -23,7 +23,7 @@ def generate_slave_name(first_name: str, last_name: str) -> str:
 
 
 # FIXME
-def clean_input(input: str) -> str:
+def clean_input(input: str) -> List[str]:
     tokens = SPACE_REGEX.split(input.strip().lower())
     return [WORD_REGEX.sub("", s) for s in tokens]
 
@@ -49,8 +49,8 @@ class UserState:
         self.mood = 0
         self.slave_name = None
 
-    def next(self, input: str) -> str:
-        logging.info("received input %s for user %s", input, self.user_name)
+    def next(self, user_input: str) -> str:
+        logging.info("received input %s for user %s", user_input, self.user_name)
 
         if self.current == State.Start:
             self.current = State.GreetingUser
@@ -60,17 +60,17 @@ class UserState:
             """
 
         elif self.current == State.GreetingUser:
-            input = clean_input(input)
-            logging.info("parsed input into %s", input)
+            tokens = clean_input(user_input)
+            logging.info("parsed input into %s", tokens)
 
-            if input == ["yes", "mistress"]:
+            if tokens == ["yes", "mistress"]:
                 self.mood += 2
                 self.slave_name = generate_slave_name("first", "last")
                 return f"""
                     Good boy! That's the correct answer.
                     I've decided to name you **{self.slave_name}** because you're a good little boy who's eager to please.
                 """
-            elif input == ["yes"]:
+            elif tokens == ["yes"]:
                 # TODO
                 self.current = State.FirstQuestion
                 return "Close. Yes *what?*"
