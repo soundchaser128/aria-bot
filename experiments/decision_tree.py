@@ -1,5 +1,6 @@
 from typing import Callable, List, Optional
 
+
 class State:
     mood: int
     user_name: str
@@ -12,24 +13,32 @@ class State:
         self.mood = 0
         self.user_id = user_id
         self.user_name = user_name
-        
+
         self.gender = None
         self.slave_name = None
 
+
 class Node:
     name: str
-    children: List['Node']
+    children: List["Node"]
     condition: Callable[[State, str], bool]
     action: Optional[Callable[[State, str], None]]
     message: str
 
-    def __init__(self, name: str, condition: Optional[Callable[[State, str], bool]], action: Callable, message: str, children: List['Node']) -> None:
+    def __init__(
+        self,
+        name: str,
+        condition: Optional[Callable[[State, str], bool]],
+        action: Callable,
+        message: str,
+        children: List["Node"],
+    ) -> None:
         self.name = name
         self.children = children
         self.condition = condition
         self.action = action
         self.message = message
-    
+
     def execute(self, state: State, answer: str) -> Optional[str]:
         if self.condition(state, answer):
             if self.action:
@@ -37,6 +46,7 @@ class Node:
             return self.message
         else:
             return None
+
 
 class Executor:
     state: State

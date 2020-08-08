@@ -20,6 +20,7 @@ def generate_slave_name(first_name: str, last_name: str) -> str:
     last = random.choice(NAME_LISTS[last_name])
     return f"{first} {last}"
 
+
 def clean_input(input: str) -> List[str]:
     """
     Converts the input into a list of lower-case tokens with all non-alphabetic characters removed.
@@ -52,6 +53,7 @@ class Aria:
     """
     Encapsulates the entire game state for a single user. State machine-ish.
     """
+
     user_id: int
     user_name: str
     current: State
@@ -92,9 +94,12 @@ class Aria:
                 self.mood += 2
                 self.slave_name = generate_slave_name("first", "last")
                 self.current = State.End
-                return message("welcome.answer_happy", gender=self.gender, slave_name=self.slave_name)
+                return message(
+                    "welcome.answer_happy",
+                    gender=self.gender,
+                    slave_name=self.slave_name,
+                )
             elif tokens == ["yes"]:
-                # TODO
                 self.current = State.FirstQuestionConfirmation
                 return message("welcome.answer_neutral")
             else:
@@ -109,12 +114,18 @@ class Aria:
                 self.mood += 1
                 self.slave_name = generate_slave_name("first", "last")
                 self.current = State.End
-                return message("welcome.answer_correct_answer", gender=self.gender, slave_name=self.slave_name)
+                return message(
+                    "welcome.answer_correct_answer",
+                    gender=self.gender,
+                    slave_name=self.slave_name,
+                )
             else:
                 self.mood -= 1
                 self.slave_name = generate_slave_name("bad", "last")
                 self.current = State.End
-                return message("welcome.answer_incorrect_answer", slave_name=self.slave_name)
-                
+                return message(
+                    "welcome.answer_incorrect_answer", slave_name=self.slave_name
+                )
+
         else:
             return "That's it for now!"

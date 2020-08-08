@@ -10,7 +10,7 @@ from state import Aria
 PREFIX = "!"
 IMAGES = {
     "neutral": "https://media.discordapp.net/attachments/643335030617407488/733402800360521788/Domme_Cara.jpg?width=652&height=864",
-    "strict": "https://media.discordapp.net/attachments/643335030617407488/733782996011712512/ARIA_Strict.jpg?width=641&height=849"
+    "strict": "https://media.discordapp.net/attachments/643335030617407488/733782996011712512/ARIA_Strict.jpg?width=641&height=849",
 }
 HELP_MESSAGE = """
 **ARIA**
@@ -24,12 +24,13 @@ Commands:
 * `!help`: To view this help message.
 """
 
+
 class AriaBot(discord.Client):
     # TODO load from/save to database eventually (for persistence across restarts)
     user_states: Dict[int, Aria] = {}
 
     async def on_ready(self):
-        await self.change_presence(status= Game(name="DM me to get started!"))
+        await self.change_presence(status=Game(name="DM me to get started!"))
         logging.info("bot is ready!")
 
     def create_embed(self, msg: str, state: Aria) -> Embed:
@@ -40,9 +41,7 @@ class AriaBot(discord.Client):
             title="ARIA", description=msg, color=discord.Color.from_rgb(255, 0, 0)
         )
         embed.add_field(name="Mistress Mood", value=str(state.mood))
-        embed.set_image(
-            url=IMAGES[image]
-        )
+        embed.set_image(url=IMAGES[image])
         return embed
 
     async def do_cleanup(self, message: discord.Message, user_id: int):
@@ -53,8 +52,10 @@ class AriaBot(discord.Client):
                 await message.delete()
 
     async def on_message(self, message: discord.Message):
-        should_process = isinstance(message.channel, discord.DMChannel) and not message.author.bot
-        
+        should_process = (
+            isinstance(message.channel, discord.DMChannel) and not message.author.bot
+        )
+
         if should_process:
             content: str = message.content
             user_id = message.author.id
@@ -65,7 +66,7 @@ class AriaBot(discord.Client):
                 if content == "!cleanup":
                     await self.do_cleanup(message, user_id)
                 elif content == "!reset":
-                    self.user_states[user_id] = Aria(user_id, user_name)                    
+                    self.user_states[user_id] = Aria(user_id, user_name)
                 elif content == "!help":
                     await message.channel.send(HELP_MESSAGE)
             else:

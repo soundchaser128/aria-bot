@@ -2,12 +2,14 @@ from typing import Optional
 from transitions import Machine
 from enum import Enum
 
+
 class State(Enum):
-    Start = 'start'
-    AskingGender = 'asking-gender'
-    Greeting = 'greeting'
-    AssigningName = 'assigning-name'
-    AssigningNameConfimration = 'assigining-name-confirmation'
+    Start = "start"
+    AskingGender = "asking-gender"
+    Greeting = "greeting"
+    AssigningName = "assigning-name"
+    AssigningNameConfimration = "assigining-name-confirmation"
+
 
 class Aria:
     states = list(State)
@@ -22,5 +24,5 @@ class Aria:
         self.gender = None
 
         self.machine = Machine(model=self, states=Aria.states, initial=State.Start)
-        self.machine.add_transition('ask_gender', State.Start, State.AskingGender)
+        self.machine.add_transition("ask_gender", State.Start, State.AskingGender)
         # TODO?
