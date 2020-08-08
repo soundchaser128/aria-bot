@@ -1,9 +1,10 @@
-from enum import Enum, auto
+import json
 from fsm import AriaFsm
 import logging
 from typing import List, Optional
 import re
 from util import load_json
+from dataclasses import dataclass
 
 
 WORD_REGEX = re.compile("([^a-z]+)", re.UNICODE)
@@ -35,7 +36,7 @@ def message(key: str, **args) -> str:
     assert isinstance(ptr, str)
     return ptr.format(**args)
 
-
+@dataclass
 class Aria:
     """
     Encapsulates the entire game state for a single user.

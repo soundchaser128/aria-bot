@@ -5,6 +5,7 @@ from transitions import Machine
 from enum import Enum
 import random
 from util import load_json
+from dataclasses import dataclass
 
 NAME_LISTS = load_json("data/name-parts.json")
 
@@ -40,7 +41,7 @@ class Answer:
     def __str__(self) -> str:
         return f"Answer(action={self.action}, message_key={self.message_key}, new_state={self.new_state})"
 
-
+@dataclass
 class AriaFsm:
     states = list(State)
 
@@ -57,9 +58,9 @@ class AriaFsm:
             "end", [State.AssigningNameConfimration, State.AssigningName], State.End
         )
 
-    def step(self, input: List[str]) -> Answer:
+    def step(self, user_input: List[str]) -> Answer:
         def set_gender(state):
-            state.gender = "".join(input)
+            state.gender = "".join(user_input)
 
         def set_mood(state, mood: int, first: str, last: str):
             state.mood += mood
@@ -74,14 +75,14 @@ class AriaFsm:
             return Answer("welcome.question", self.state, set_gender)
 
         elif self.state == State.AssigningName:
-            if input == ["yes", "mistress"]:
+            if user_input == ["yes", "mistress"]:
                 self.end()
                 return Answer(
                     "welcome.answer_happy",
                     self.state,
                     lambda state: set_mood(state, 2, "first", "last"),
                 )
-            elif input == ["yes"]:
+            elif user_input == ["yes"]:
                 self.assign_name_confirm()
                 return Answer("welcome.answer_neutral", self.state, None)
             else:
@@ -93,7 +94,7 @@ class AriaFsm:
                 )
 
         elif self.state == State.AssigningNameConfimration:
-            if input == ["yes", "mistress"]:
+            if user_input == ["yes", "mistress"]:
                 self.end()
                 return Answer(
                     "welcome.answer_correct_answer",

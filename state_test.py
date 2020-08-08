@@ -3,6 +3,7 @@
 from state import clean_input, Aria, message
 from fsm import State
 import re
+import pickle
 
 
 def test_clean_input():
@@ -37,3 +38,12 @@ def test_state_transitions():
     question = question.replace(aria.slave_name, "fake name")
     assert question == message("welcome.answer_correct_answer", gender="boy", slave_name="fake name")
     assert aria.mood == 1
+
+
+def test_serialization():
+    aria = Aria(1, "test")
+    ser = pickle.dumps(aria)
+    assert ser is not None
+
+    result = pickle.loads(ser)
+    assert aria == result

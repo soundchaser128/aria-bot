@@ -51,7 +51,17 @@ class AriaBot(discord.Client):
                 logging.info("deleting message %s", message.id)
                 await message.delete()
 
+    def find_state(self, user_id: int, user_name: str) -> Aria:
+        state = None
+        try:
+            state = self.user_states[user_id]
+        except KeyError:
+            state = Aria(user_id, user_name)
+            self.user_states[user_id] = state
+        return state
+
     async def on_message(self, message: discord.Message):
+        # Only handle messages via DM that are not our own messages (prevent loops)
         should_process = (
             isinstance(message.channel, discord.DMChannel) and not message.author.bot
         )
@@ -62,6 +72,7 @@ class AriaBot(discord.Client):
             user_name = message.author.name
             logging.info("received message '%s' from user '%s'", content, user_name)
 
+            # Handle commands when they start with !
             if content.startswith(PREFIX):
                 if content == "!cleanup":
                     await self.do_cleanup(message, user_id)
@@ -69,13 +80,9 @@ class AriaBot(discord.Client):
                     self.user_states[user_id] = Aria(user_id, user_name)
                 elif content == "!help":
                     await message.channel.send(HELP_MESSAGE)
+            # Handle answers by the user
             else:
-                state = None
-                try:
-                    state = self.user_states[user_id]
-                except KeyError:
-                    state = Aria(user_id, user_name)
-                    self.user_states[user_id] = state
+                state = self.find_state(user_id, user_name)
                 text = state.next(message.content)
                 await message.channel.send(embed=self.create_embed(text, state))
 
