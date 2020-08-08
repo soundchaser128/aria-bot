@@ -1,4 +1,8 @@
-from state import clean_input, Aria, State, message
+# pylint: disable=E1101
+
+from state import clean_input, Aria, message
+from fsm import State
+import re
 
 
 def test_clean_input():
@@ -10,9 +14,26 @@ def test_clean_input():
 
 def test_state_transitions():
     aria = Aria(1, "test")
-    assert aria.current == State.AskGender
+    assert aria.fsm.state == State.Start
     assert aria.mood == 0
+    assert aria.user_id == 1
+    assert aria.user_name == "test"
 
-    first_question = aria.next(None)
-    assert first_question == message("gender_question")
+    question = aria.next(None)
+    assert question == message("gender_question")
+    assert aria.fsm.state == State.AskingGender
     
+    question = aria.next("boy")
+    assert question == message("welcome.question", user_name="test")
+    assert aria.fsm.state == State.AssigningName
+
+    question = aria.next("yes")
+    assert question == message("welcome.answer_neutral")
+    assert aria.fsm.state == State.AssigningNameConfimration
+
+    question = aria.next("yes mistress")
+    assert re.match(r"[a-z]+\s[a-z]+", aria.slave_name)
+    
+    question = question.replace(aria.slave_name, "fake name")
+    assert question == message("welcome.answer_correct_answer", gender="boy", slave_name="fake name")
+    assert aria.mood == 1

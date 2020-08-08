@@ -13,5 +13,6 @@
                                 I've decided to name you **{slave_name}** because you're a good little {gender} who's eager to please.",
         answer_incorrect_answer: "Hmmm. That's a shame you didn't pick up on my hint. You're off to a bad start, but I'll train you up. \
                                   I've decided to name you **{slave_name}** because you're almost getting the idea but seem a little slow."
-    }
+    },
+    end_message: "That's it for now."
 }
