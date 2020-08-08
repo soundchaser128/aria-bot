@@ -2,18 +2,14 @@ from enum import Enum, auto
 import logging
 from typing import List, Optional
 import re
-import json
 import random
-
-
-def load_names():
-    with open("name-parts.json") as fp:
-        return json.load(fp)
+from util import load_json
 
 
 WORD_REGEX = re.compile("([^a-z]+)", re.UNICODE)
-SPACE_REGEX = re.compile(r"\s+")
-NAME_LISTS = load_names()
+SPACE_REGEX = re.compile(r"[\s|,.!|]+")
+NAME_LISTS = load_json("data/name-parts.json")
+MESSAGES = load_json("data/messages.json5")
 
 
 def generate_slave_name(first_name: str, last_name: str) -> str:
@@ -29,7 +25,18 @@ def clean_input(input: str) -> List[str]:
     Converts the input into a list of lower-case tokens with all non-alphabetic characters removed.
     """
     tokens = SPACE_REGEX.split(input.strip().lower())
-    return [WORD_REGEX.sub("", s) for s in tokens]
+    return [WORD_REGEX.sub("", s) for s in tokens if len(s) > 0]
+
+
+def message(key: str, **args) -> str:
+    path = key.split(".")
+    path.reverse()
+    ptr = MESSAGES
+    while len(path) > 0:
+        k = path.pop()
+        ptr = ptr[k]
+    assert isinstance(ptr, str)
+    return ptr.format(**args)
 
 
 # TODO this approach probably won't scale well
@@ -41,7 +48,7 @@ class State(Enum):
     End = auto
 
 
-class UserState:
+class Aria:
     """
     Encapsulates the entire game state for a single user. State machine-ish.
     """
@@ -61,7 +68,7 @@ class UserState:
         self.slave_name = None
         self.gender = None
 
-    def next(self, user_input: str) -> str:
+    def next(self, user_input: Optional[str]) -> str:
         """
         Takes the user's input and advances the state based on it. Returns
         the text the bot should answer in response.
@@ -70,15 +77,12 @@ class UserState:
 
         if self.current == State.AskGender:
             self.current = State.GreetingUser
-            return "Before we get started, would you rather I call you a **boy** or a **girl**?"
+            return message("gender_question")
 
         elif self.current == State.GreetingUser:
             self.current = State.FirstQuestion
             self.gender = clean_input(user_input)[0]
-            return f"""
-                Hello {self.user_name}, I am ARIA and I'm your new Mistress.
-                For this session, don't you think we should call you something more appropriate?
-            """
+            return message("welcome.question", user_name=self.user_name)
 
         elif self.current == State.FirstQuestion:
             tokens = clean_input(user_input)
@@ -88,23 +92,16 @@ class UserState:
                 self.mood += 2
                 self.slave_name = generate_slave_name("first", "last")
                 self.current = State.End
-                return f"""
-                    Good {self.gender}! That's the correct answer.
-                    I've decided to name you **{self.slave_name}** because you're a good little {self.gender} who's eager to please.
-                """
+                return message("welcome.answer_happy", gender=self.gender, slave_name=self.slave_name)
             elif tokens == ["yes"]:
                 # TODO
                 self.current = State.FirstQuestionConfirmation
-                return "Close. Yes *what?*"
+                return message("welcome.answer_neutral")
             else:
                 self.mood -= 2
                 self.slave_name = generate_slave_name("bad", "bad")
                 self.current = State.End
-                return f"""
-                    Hmmm. That's a shame. You're off to a bad start, but I'll train you up.
-                    A "yes" or "yes mistress" should have been easy, but you had to get mouthy.
-                    So your new name is **{self.slave_name}** and you'll see what that means if you don't improve your attitude.
-                """
+                return message("welcome.answer_mad", slave_name=self.slave_name)
         elif self.current == State.FirstQuestionConfirmation:
             tokens = clean_input(user_input)
 
@@ -112,18 +109,12 @@ class UserState:
                 self.mood += 1
                 self.slave_name = generate_slave_name("first", "last")
                 self.current = State.End
-                return f"""
-                    Good {self.gender}! You got there. That's the correct answer.
-                    I've decided to name you **{self.slave_name}** because you're a good little {self.gender} who's eager to please.
-                """
+                return message("welcome.answer_correct_answer", gender=self.gender, slave_name=self.slave_name)
             else:
                 self.mood -= 1
                 self.slave_name = generate_slave_name("bad", "last")
                 self.current = State.End
-                return f"""
-                    Hmmm. That's a shame you didn't pick up on my hint. You're off to a bad start, but I'll train you up.
-                    I've decided to name you **{self.slave_name}** because you're almost getting the idea but seem a little slow.
-                """
+                return message("welcome.answer_incorrect_answer", slave_name=self.slave_name)
                 
         else:
             return "That's it for now!"

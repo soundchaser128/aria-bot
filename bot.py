@@ -5,7 +5,7 @@ import discord
 from discord.activity import Game
 from dotenv import load_dotenv
 from discord.embeds import Embed
-from state import UserState
+from state import Aria
 
 PREFIX = "!"
 IMAGES = {
@@ -26,13 +26,13 @@ Commands:
 
 class AriaBot(discord.Client):
     # TODO load from/save to database eventually (for persistence across restarts)
-    user_states: Dict[int, UserState] = {}
+    user_states: Dict[int, Aria] = {}
 
     async def on_ready(self):
         await self.change_presence(status= Game(name="DM me to get started!"))
         logging.info("bot is ready!")
 
-    def create_embed(self, msg: str, state: UserState) -> Embed:
+    def create_embed(self, msg: str, state: Aria) -> Embed:
         image = "neutral"
         if state.mood < 0:
             image = "strict"
@@ -65,7 +65,7 @@ class AriaBot(discord.Client):
                 if content == "!cleanup":
                     await self.do_cleanup(message, user_id)
                 elif content == "!reset":
-                    self.user_states[user_id] = UserState(user_id, user_name)                    
+                    self.user_states[user_id] = Aria(user_id, user_name)                    
                 elif content == "!help":
                     await message.channel.send(HELP_MESSAGE)
             else:
@@ -73,7 +73,7 @@ class AriaBot(discord.Client):
                 try:
                     state = self.user_states[user_id]
                 except KeyError:
-                    state = UserState(user_id, user_name)
+                    state = Aria(user_id, user_name)
                     self.user_states[user_id] = state
                 text = state.next(message.content)
                 await message.channel.send(embed=self.create_embed(text, state))
