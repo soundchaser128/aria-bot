@@ -8,4 +8,4 @@ COPY Pipfile.lock .
 RUN pipenv install --system --deploy
 
 COPY . .
-CMD ["python", "bot.py"]
+CMD ["python", "aria/bot.py"]

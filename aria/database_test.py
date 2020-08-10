@@ -1,5 +1,5 @@
-from database import connect, create_schema, from_database, to_database
 import os
+from database import connect, create_schema, from_database, to_database
 from state import Aria
 
 DB = "test.sqlite3"

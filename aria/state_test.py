@@ -1,9 +1,9 @@
 # pylint: disable=E1101
 
-from state import clean_input, Aria, message
-from fsm import State
 import re
 import pickle
+from state import clean_input, Aria, message
+from fsm import State
 
 
 def test_clean_input():

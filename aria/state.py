@@ -1,15 +1,15 @@
 import json
-from fsm import AriaFsm
 import logging
 from typing import List, Optional
 import re
-from util import load_json
 from dataclasses import dataclass
+from util import load_json
+from fsm import AriaFsm
 
 
 WORD_REGEX = re.compile("([^a-z]+)", re.UNICODE)
 SPACE_REGEX = re.compile(r"[\s|,.!|]+")
-MESSAGES = load_json("data/messages.json5")
+MESSAGES = load_json("aria/data/messages.json5")
 
 
 def clean_input(input: Optional[str]) -> List[str]:
