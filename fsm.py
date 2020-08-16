@@ -7,7 +7,7 @@ import random
 from dataclasses import dataclass
 from util import load_json
 
-NAME_LISTS = load_json("aria/data/name-parts.json")
+NAME_LISTS = load_json("data/name-parts.json")
 
 
 def generate_slave_name(first_name: str, last_name: str) -> str:
